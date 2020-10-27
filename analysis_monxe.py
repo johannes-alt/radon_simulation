@@ -37,7 +37,7 @@ def calc_baseline(data_dict):
         data_dict[i]['baseline'] = baseline
 
 def calc_height(data_dict):
-    # claculating the height of the peaks
+    # claculating the height of the peaks via highest sample to baseline
     
     timesp_list = list(data_dict.keys())
     
@@ -90,3 +90,25 @@ def fit_expo(data_dict):
         #plt.plot(x, waveform)
         #plt.plot(expo(x, popt[0], popt[1], popt[2]))
         #plt.show()
+        
+def fit_complete(x, x_bsl, baseline, A_rise, lamba_rise, A_dec, lamba_dec):
+    # function that is fitted on to the data
+    
+    x_bsl = int(x_bsl)
+    x_ls = x[x_bsl:]
+    x_rd = baseline*np.ones(len(x_ls)) + A_rise * (1-np.exp(-lamba_rise*(x_ls-x_bsl))) - A_dec * (1-np.exp(-lamba_dec*(x_ls-x_bsl)))
+    const = np.concatenate((baseline * np.ones(x_bsl),np.zeros(len(x_rd))))
+    rise_fall = np.concatenate((np.zeros(x_bsl),x_rd))
+    return const + rise_fall
+
+def fit(data_dict):
+    # fitting
+    
+    for i in data_dict:
+        waveform = np.array(list(map(int,data_dict[i]['waveform'][1:-2])))
+        x = np.linspace(0, len(waveform)-1, len(waveform))
+        popt, pcov = curve_fit(fit_complete, x, waveform,
+                              p0=[645, 4800, data_dict[i]['fit_parameter'][0][0]-500, 1/200,
+                                  data_dict[i]['fit_parameter'][0][0]+500,
+                                  1/data_dict[i]['fit_parameter'][0][1]])
+        data_dict[i]['fit_3'] = (popt, pcov)
