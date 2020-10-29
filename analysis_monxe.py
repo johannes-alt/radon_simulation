@@ -65,7 +65,7 @@ def create_array(data_dict, mode = 'fit_max'):
             data_array.append((data_dict[i]['timestamp_ps'], data_dict[i]['fit_max']))
     elif mode == 'wf_max':
         for i in timesp_list:
-            data_array.append((data_dict[i]['timestamp_ps'], max(list(map(int,data_dict[i]['waveform'][1:-2])))-data_dict[i]['fit_3'][0][1]))
+            data_array.append((data_dict[i]['timestamp_ps'], data_dict[i]['height']))
     return np.array(data_array, timestamp_data_dtype)
 
 def expo(x, h, t, c):
@@ -112,3 +112,4 @@ def fit(data_dict):
                                   data_dict[i]['fit_parameter'][0][0]+500,
                                   1/data_dict[i]['fit_parameter'][0][1]])
         data_dict[i]['fit_3'] = (popt, pcov)
+        data_dict[i]['fit_max'] = fit_complete(x, popt[0], popt[1], popt[2], popt[3], popt[4], popt[5]) - popt[1]
